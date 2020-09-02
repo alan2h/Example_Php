@@ -1,3 +1,12 @@
+
+<!DOCTYPE html>
+<html lang="en">
 <?php
-echo 'bienvenido';
+    include("../../layouts/layouts.php")
 ?>
+<body>
+<?php
+echo '<p>bienvenido</p>';
+?>
+</body>
+</html>
