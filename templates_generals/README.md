@@ -1,0 +1,2 @@
+# mimity
+online shop template
