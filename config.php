@@ -10,7 +10,7 @@
         public function __construct(){
             $this->servername = 'localhost';
             $this->username = 'root';
-            $this->password = 'se242403germanb';
+            $this->password = '';
             $this->dbname = 'ventas';
             
         }

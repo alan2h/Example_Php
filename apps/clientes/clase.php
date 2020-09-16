@@ -73,7 +73,7 @@
          obtiene todos los clientes para el listado
         */
         $mysql = new Connection();
-        $query = 'Select * from clientes_clientes limit '.$nro_pagina.', 2';
+        $query = 'Select * from clientes limit '.$nro_pagina.', 2';
         $result = $mysql->consultar($query);
         return $result;
     }
@@ -83,7 +83,7 @@
          obtiene la cantidad de registros
         */
         $mysql = new Connection();
-        $query = 'Select count(*) as cantidad from clientes_clientes';
+        $query = 'Select count(*) as cantidad from clientes';
         $result = $mysql->consultar($query);
         return $result->fetch_assoc();
     }
