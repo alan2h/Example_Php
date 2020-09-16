@@ -28,7 +28,13 @@
             <div class="text-center opacity-50 font-italic">to your account</div>
           </div>
           <div class="card-body p-4">
-
+          <div class="alert alert-<?php  if (isset($_GET['status'])){ echo $_GET['status']; } ?> " role="alert">
+            <?php 
+              if (isset($_GET['message'])){
+                echo $_GET['message'];
+              }
+            ?>
+            </div>
             <form action="apps/auth/modulos/login.php" method="POST">
               <div class="form-group">
                 <div class="floating-label input-icon">
