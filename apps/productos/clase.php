@@ -155,6 +155,26 @@
           return $this;
      }
 
+     public function buscarProducto($texto){
+          /*
+           obtiene todos los productos para el listado
+          */
+          $mysql = new Connection();
+          $query = "SELECT * FROM productos where nombre='".$texto."';";
+          $result = $mysql->consultar($query);
+          return $result;
+      }
+
+      public function buscarCodigo($id){
+          /*
+           obtiene el producto por codigo
+          */
+          $mysql = new Connection();
+          $query = "SELECT * FROM productos where id=".$id.";";
+          $result = $mysql->consultar($query);
+          return $result;
+      }
+
      public function obtenerTodos(){
         /*
          obtiene todos los productos para el listado

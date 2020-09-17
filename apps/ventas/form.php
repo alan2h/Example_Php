@@ -52,6 +52,9 @@ include_once('../../layouts/head.php');
 
                 <section id="section1">
                 <h5>Realizar Venta </h5>
+                <div id="id_message_validacion" class="alert alert-danger" role="alert">
+                    Error de carga
+                </div>
 
                 <div class="card">
                         <div class="card-body">
@@ -65,7 +68,7 @@ include_once('../../layouts/head.php');
                                 <!-- control -->
                                     <div class="floating-label input-icon input-icon-right">
                                         <i onclick="abrirListaProductos();" data-feather="search"></i>
-                                        <input type="text" class="form-control" id="floatingSearch" placeholder="Código del articulo">
+                                        <input id="id_txt_codigo" type="text" class="form-control" id="floatingSearch" placeholder="Código del articulo">
                                         <label for="floatingSearch">Codigo del articulo</label>
                                     </div>
                                 <!-- control -->
@@ -116,7 +119,7 @@ include_once('../../layouts/head.php');
                         </div>
                         <div class="d-flex flex-column flex-sm-row mt-3">
                            
-                            <button class="btn btn-success has-icon ml-sm-1 mt-1 mt-sm-0" type="button">
+                            <button onclick="guardarFormVentas()" class="btn btn-success has-icon ml-sm-1 mt-1 mt-sm-0" type="button">
                             <i class="mr-2" data-feather="printer"></i>Guardar
                             </button>
                         </div>
@@ -146,6 +149,8 @@ include_once('../../layouts/head.php');
                         </button>
                     </div>
                     <div class="modal-body">
+                    <input id="id_txt_buscar" class="form-control" placeholder="Buscar producto" >
+                    <button onclick="buscarProductos()" class="btn btn-info">Buscar</button>
                     <table class="table table-striped table-sm" id="id_tabla_productos">
                             <thead>
                                 <tr>
@@ -182,9 +187,12 @@ include_once('../../layouts/head.php');
 
 variables globales
 -------------------*/
+
+//document.getElementById('id_message_validacion').style.display = 'none'; 
+$('#id_message_validacion').hide();// se deshabilita el mensaje
 var total = 0.0;
 var vuelto = 0.0;
-
+var detalle_ventas = []; // array
 /*--------------
     funcion para cargar modal de productos
 --------------*/
@@ -196,11 +204,11 @@ $.ajax({
         var datos = JSON.parse(data);
         //console.table(datos);
         for (var x=0; x < datos.length; x++){
-            console.log(datos[x]);
             $('#id_tabla_productos tr:last').after('<tr onclick="setCantidadProducto(' + datos[x].id + ",'"  + datos[x].nombre  + "',"  + datos[x].precio_venta + ')"><td >' + datos[x].id + '</td><td>' + datos[x].nombre + '</td><td>' + datos[x].precio_venta + '</td></tr>')
         }
     }
 })
+
 
 function setCantidadProducto(id, nombre, precio){
     /*
@@ -208,7 +216,32 @@ function setCantidadProducto(id, nombre, precio){
     */
     let cantidad = prompt('Ingrese la cantidad')
     let subtotal = calcularSubtotal(cantidad, precio);
+    let items = {}; // items del detalle
+    
+    items['id_producto'] = id;
+    items['cantidad'] = cantidad;
+
+    detalle_ventas.push(items); // armando mi detalle para el envio
+
     $('#id_detalle_venta tr:last').after('<tr><td >' + id + '</td><td>' + nombre + '</td><td>' + cantidad + '</td><td>$' + subtotal + '</td> <td class="text-right"> <i class="mr-2" data-feather="trash"></i></td></tr>')
+}
+
+function buscarProductos(){
+    $.ajax({
+        type: 'GET',
+        url : '../productos/helpers.php',
+        data: {
+            'text_buscar': $('#id_txt_buscar').val()
+        },
+        success: function(data){
+            var datos = JSON.parse(data);
+            $('#id_tabla_productos').empty();
+            for (var x=0; x < datos.length; x++){
+                console.log(datos[x]);
+                $('#id_tabla_productos').append('<tr onclick="setCantidadProducto(' + datos[x].id + ",'"  + datos[x].nombre  + "',"  + datos[x].precio_venta + ')"><td >' + datos[x].id + '</td><td>' + datos[x].nombre + '</td><td>' + datos[x].precio_venta + '</td></tr>')
+            }
+        }
+    })
 }
 
 /*--------------
@@ -244,6 +277,67 @@ function calcularVuelto(){
 function abrirListaProductos(){
     $('#id_lista_productos').modal('show');
 }
+
+
+/*--------------------------
+buscar por codigo el producto
+--------------------------*/
+
+$('#id_txt_codigo').on('keypress',function(e) {
+    if(e.which == 13) {
+        $.ajax({
+        type: 'GET',
+            url : '../productos/helpers.php',
+            data: {
+                'codigo': $('#id_txt_codigo').val()
+            },
+            success: function(data){
+                let datos = JSON.parse(data);
+                console.log(datos[0]);
+                let articulo = datos[0]; // aca tengo el diccionario de mi articulo
+                
+                let subtotal = calcularSubtotal(1, articulo.precio_venta); // la cantidad por defecto 1
+
+                let items = {}; // items del detalle
+                
+                items['id_producto'] = articulo.id;
+                items['cantidad'] = 1;
+
+                detalle_ventas.push(items); // armando mi detalle para el envio
+
+                $('#id_detalle_venta tr:last').after('<tr><td >' + articulo.id + '</td><td>' + articulo.nombre + '</td><td>' + '1' + '</td><td>$' + subtotal + '</td> <td class="text-right"> <i class="mr-2" data-feather="trash"></i></td></tr>')
+            }
+        })
+    }
+});
+
+
+/*--------------------------
+buscar por codigo el producto
+--------------------------*/
+
+/*------------------
+ guardar formulario
+----------------*/
+function guardarFormVentas(){
+    if (detalle_ventas.length > 0){
+        $.ajax({
+            type: 'post',
+            url: '../ventas/helpers.php',
+            data: {
+                'items': detalle_ventas
+            },
+            success: function(data){
+                console.log(data)
+            }
+        })
+    }else{
+        $('#id_message_validacion').show();
+    }
+}
+/*------------------
+ guardar formulario
+----------------*/
 
 </script>
 
