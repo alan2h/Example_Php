@@ -328,11 +328,15 @@ function guardarFormVentas(){
                 'items': detalle_ventas
             },
             success: function(data){
-                console.log(data)
+                if (data.split('-')[0] == '200'){ // aca consulto si se guardo
+                    window.location.href = '/example_template/apps/ventas/ticket.php?id_venta=' + data.split('-')[1];
+                }else{
+                    $('#id_message_validacion').show(); // esto imprime un mensaje de error
+                }
             }
         })
     }else{
-        $('#id_message_validacion').show();
+        $('#id_message_validacion').show(); // esto imprime un mensaje de error
     }
 }
 /*------------------

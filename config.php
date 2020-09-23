@@ -33,7 +33,7 @@
         public function insertar($query){
             $this->conectar();
             $datos = $this->_conn->query($query);
-            $last_id = $conn->insert_id;
+            $last_id = $this->_conn->insert_id;
             $this->desconectar();
             return $last_id;
         }
