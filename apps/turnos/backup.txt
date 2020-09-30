@@ -1,0 +1,20 @@
+  $turnos = new Turno();
+
+    $result = $turnos->obtenerTodos();
+    $lista_turno = [];
+    $i = 0;
+    foreach($result as $item){
+        /*$elementos = array(
+            "title"=> "prueba",
+            "start"=> $item['fecha_desde'].'T'.$item['hora_desde'],
+            "end"=> $item['fecha_hasta'].'T'.$item['hora_hasta']
+        );*/
+        $lista_turno[$i]['title'] = 'prueba';
+        $lista_turno[$i]['start'] = $item['fecha_desde'].'T'.$item['hora_desde'];
+        $lista_turno[$i]['end'] = $item['fecha_hasta'].'T'.$item['hora_hasta'];
+        $i += 1;
+        //echo json_encode($elementos);
+        //$lista_turno- $elementos;
+    }
+
+    print json_encode($lista_turno);

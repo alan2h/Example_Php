@@ -154,9 +154,9 @@ include_once('../../layouts/head.php');
                     <table class="table table-striped table-sm" id="id_tabla_productos">
                             <thead>
                                 <tr>
-                                <th class="text-center">Código</th>
-                                <th>Producto</th>
-                                <th>precio</th>
+                                    <th class="text-center">Código</th>
+                                    <th>Producto</th>
+                                    <th>precio</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -180,7 +180,8 @@ include_once('../../layouts/head.php');
   <?php 
     include_once('../../layouts/file_js.php');
   ?>
-
+<script src="../../static/validaciones/ventas.js"></script>
+<script src="../../static/calculos/ventas.js"></script>
 <script>
 
 /*------------------
@@ -193,6 +194,7 @@ $('#id_message_validacion').hide();// se deshabilita el mensaje
 var total = 0.0;
 var vuelto = 0.0;
 var detalle_ventas = []; // array
+var indice = 0; // indice del array
 /*--------------
     funcion para cargar modal de productos
 --------------*/
@@ -209,6 +211,11 @@ $.ajax({
     }
 })
 
+$('#id_pago').on('keypress',function(e) {
+    if(e.which == 13) {
+        calcularVuelto();
+    }
+});
 
 function setCantidadProducto(id, nombre, precio){
     /*
@@ -220,10 +227,13 @@ function setCantidadProducto(id, nombre, precio){
     
     items['id_producto'] = id;
     items['cantidad'] = cantidad;
+    items['precio'] = precio;
 
     detalle_ventas.push(items); // armando mi detalle para el envio
 
-    $('#id_detalle_venta tr:last').after('<tr><td >' + id + '</td><td>' + nombre + '</td><td>' + cantidad + '</td><td>$' + subtotal + '</td> <td class="text-right"> <i class="mr-2" data-feather="trash"></i></td></tr>')
+    $('#id_detalle_venta tr:last').after('<tr id=' + indice + ' ><td  >' + id + '</td><td>' + nombre + '</td><td>' + cantidad + '</td><td>$' + subtotal + '</td> <td class="text-right"> <i class="mr-2" onclick="eliminarArticulo(' + indice + ')" data-feather="trash"></i></td></tr>')
+
+    indice += 1;
 }
 
 function buscarProductos(){
@@ -235,7 +245,7 @@ function buscarProductos(){
         },
         success: function(data){
             var datos = JSON.parse(data);
-            $('#id_tabla_productos').empty();
+            $('#id_tabla_productos tbody tr').remove(); // elimina los tr del tbody
             for (var x=0; x < datos.length; x++){
                 console.log(datos[x]);
                 $('#id_tabla_productos').append('<tr onclick="setCantidadProducto(' + datos[x].id + ",'"  + datos[x].nombre  + "',"  + datos[x].precio_venta + ')"><td >' + datos[x].id + '</td><td>' + datos[x].nombre + '</td><td>' + datos[x].precio_venta + '</td></tr>')
@@ -244,35 +254,26 @@ function buscarProductos(){
     })
 }
 
+/*------------
+eliminar de la tabla
+---------*/
+
+function eliminarArticulo(i){
+    $('#' + i).remove(); // removemos de la tabla
+    console.table(detalle_ventas[i]);
+    restarSubtotal(detalle_ventas[i].cantidad, detalle_ventas[i].precio);
+    detalle_ventas.splice(i, 1); // quita un elemento del array
+}
+
+
+/*------------
+eliminar de la tabla
+---------*/
+
 /*--------------
     funcion para cargar modal de productos
 --------------*/
 
-/*-----------------
-    funciones de calculo
--------------------*/
-function calcularSubtotal(cantidad, precio){
-    let resultado = parseFloat(cantidad) * parseFloat(precio);
-    total += resultado; //acumula cantidad
-    $('#id_total').text('$' + total);
-    return resultado;
-}
-
-$('#id_pago').on('keypress',function(e) {
-    if(e.which == 13) {
-        calcularVuelto();
-    }
-});
-
-function calcularVuelto(){
-    let valor_pago= $('#id_pago').val();
-    let resultado =  valor_pago - total;
-    $('#id_vuelto').text('$' + resultado);
-}
-
-/*------------------
-    funciones de calculo
--------------------*/
 
 function abrirListaProductos(){
     $('#id_lista_productos').modal('show');
@@ -320,7 +321,7 @@ buscar por codigo el producto
  guardar formulario
 ----------------*/
 function guardarFormVentas(){
-    if (detalle_ventas.length > 0){
+    if (validarDetalle(detalle_ventas)){
         $.ajax({
             type: 'post',
             url: '../ventas/helpers.php',
@@ -336,6 +337,7 @@ function guardarFormVentas(){
             }
         })
     }else{
+        $('#id_message_validacion').html(getMensaje());//tiene que sobrescribir el mensaje
         $('#id_message_validacion').show(); // esto imprime un mensaje de error
     }
 }

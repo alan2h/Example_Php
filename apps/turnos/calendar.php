@@ -9,6 +9,7 @@ ini_set('display_errors', '1');
 include_once('../../layouts/head.php');
 ?>
 <link rel="stylesheet" href="../../static/full_calendar/main.css" >
+
 <body>
 
   <!-- Sidebar -->
@@ -71,12 +72,14 @@ include_once('../../layouts/head.php');
   ?>
 
 <script src="../../static/full_calendar/main.js" ></script>
+<script src="../../static/full_calendar/locales-all.js" ></script>
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {
     var calendarEl = document.getElementById('calendar');
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
+      locale: 'es',
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
@@ -87,14 +90,19 @@ document.addEventListener('DOMContentLoaded', function() {
       businessHours: true, // display business hours
       editable: true,
       selectable: true,
-      events: [
-        {
-          title: 'Business Lunch',
-          start: '2020-09-03T13:00:00',
-          constraint: 'businessHours'
-        }
-        
-      ]
+      events: '/example_template/apps/turnos/helpers.php',
+
+      eventClick: function(info) {
+        alert('Event: ' + info.event.title);
+        alert('Coordinates: ' + info.jsEvent.pageX + ',' + info.jsEvent.pageY);
+        alert('View: ' + info.view.type);
+
+        // change the border color just for fun
+        info.el.style.borderColor = 'red';
+      }
+
+
+
     });
 
     calendar.render();
