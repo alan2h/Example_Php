@@ -139,7 +139,7 @@ include_once('../../layouts/head.php');
 
 
             <!-- Modal lista de productos -->
-            <div class="modal fade" id="id_lista_productos" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal fade" id="id_lista_productos"  aria-labelledby="exampleModalLabel" aria-hidden="true">
                 <div class="modal-dialog">
                     <div class="modal-content">
                     <div class="modal-header">
@@ -182,6 +182,7 @@ include_once('../../layouts/head.php');
   ?>
 <script src="../../static/validaciones/ventas.js"></script>
 <script src="../../static/calculos/ventas.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 <script>
 
 /*------------------
@@ -195,6 +196,7 @@ var total = 0.0;
 var vuelto = 0.0;
 var detalle_ventas = []; // array
 var indice = 0; // indice del array
+
 /*--------------
     funcion para cargar modal de productos
 --------------*/
@@ -206,7 +208,7 @@ $.ajax({
         var datos = JSON.parse(data);
         //console.table(datos);
         for (var x=0; x < datos.length; x++){
-            $('#id_tabla_productos tr:last').after('<tr onclick="setCantidadProducto(' + datos[x].id + ",'"  + datos[x].nombre  + "',"  + datos[x].precio_venta + ')"><td >' + datos[x].id + '</td><td>' + datos[x].nombre + '</td><td>' + datos[x].precio_venta + '</td></tr>')
+            $('#id_tabla_productos tr:last').after('<tr id="tr_' + datos[x].id + '" onclick="setCantidadProducto(' + datos[x].id + ",'"  + datos[x].nombre  + "',"  + datos[x].precio_venta + ')"><td >' + datos[x].id + '</td><td>' + datos[x].nombre + '</td><td>' + datos[x].precio_venta + '</td></tr>')
         }
     }
 })
@@ -221,7 +223,10 @@ function setCantidadProducto(id, nombre, precio){
     /*
       cargar detalle de venta
     */
-    let cantidad = prompt('Ingrese la cantidad')
+
+  
+   
+    let cantidad = 1
     let subtotal = calcularSubtotal(cantidad, precio);
     let items = {}; // items del detalle
     
@@ -230,8 +235,12 @@ function setCantidadProducto(id, nombre, precio){
     items['precio'] = precio;
 
     detalle_ventas.push(items); // armando mi detalle para el envio
+     
+    $('#tr_' + id).remove();
 
-    $('#id_detalle_venta tr:last').after('<tr id=' + indice + ' ><td  >' + id + '</td><td>' + nombre + '</td><td>' + cantidad + '</td><td>$' + subtotal + '</td> <td class="text-right"> <i class="mr-2" onclick="eliminarArticulo(' + indice + ')" data-feather="trash"></i></td></tr>')
+    nombre = `'${nombre}'`
+
+    $('#id_detalle_venta tr:last').after(`<tr id='${indice}' ><td  >${id}</td><td>${nombre}</td><td>${cantidad}</td><td>$${subtotal}</td> <td class="text-right"> <i class="mr-2" onclick="eliminarArticulo(${indice},${id},${nombre},${precio})" data-feather="trash"></i></td></tr>`)
 
     indice += 1;
 }
@@ -248,7 +257,7 @@ function buscarProductos(){
             $('#id_tabla_productos tbody tr').remove(); // elimina los tr del tbody
             for (var x=0; x < datos.length; x++){
                 console.log(datos[x]);
-                $('#id_tabla_productos').append('<tr onclick="setCantidadProducto(' + datos[x].id + ",'"  + datos[x].nombre  + "',"  + datos[x].precio_venta + ')"><td >' + datos[x].id + '</td><td>' + datos[x].nombre + '</td><td>' + datos[x].precio_venta + '</td></tr>')
+                $('#id_tabla_productos').append('<tr id="tr_' + datos[x].id + '" onclick="setCantidadProducto(' + datos[x].id + ",'"  + datos[x].nombre  + "',"  + datos[x].precio_venta + ')"><td >' + datos[x].id + '</td><td>' + datos[x].nombre + '</td><td>' + datos[x].precio_venta + '</td></tr>')
             }
         }
     })
@@ -258,7 +267,9 @@ function buscarProductos(){
 eliminar de la tabla
 ---------*/
 
-function eliminarArticulo(i){
+function eliminarArticulo(i, id, nombre, precio){
+    console.log(id, nombre, precio, '======')
+    $('#id_tabla_productos tr:last').after(`<tr id="tr_${id}" onclick="setCantidadProducto(' ${id} ,'${nombre}', ${precio} ')"><td >${id}</td><td>${nombre}</td><td>${precio}</td></tr>`)
     $('#' + i).remove(); // removemos de la tabla
     console.table(detalle_ventas[i]);
     restarSubtotal(detalle_ventas[i].cantidad, detalle_ventas[i].precio);
